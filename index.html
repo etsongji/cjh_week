@@ -78,8 +78,8 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic','맑은 고
   padding:13px 18px;display:flex;align-items:center;gap:14px;
   box-shadow:0 1px 4px rgba(13,59,122,.07);
 }
-.wb-bdg{background:var(--primary);color:#fff;border-radius:8px;padding:8px 14px;text-align:center;flex-shrink:0}
-.wb-bdg .wn{font-size:16px;font-weight:800;font-family:inherit;line-height:1.2;letter-spacing:-.3px}
+.wb-bdg{background:var(--primary);color:#fff;border-radius:8px;padding:10px 16px;text-align:center;flex-shrink:0}
+.wb-bdg .wn{font-size:15px;font-weight:800;font-family:inherit;line-height:1.3;letter-spacing:-.5px;white-space:nowrap}
 .wb-bdg .wl{font-size:10px;opacity:.6;letter-spacing:.8px;margin-top:2px}
 .wb-inf{flex:1}
 .wb-inf .wd{font-size:17px;font-weight:700;letter-spacing:-.3px}
@@ -175,6 +175,51 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic','맑은 고
 .chip-l{font-size:9.5px;opacity:.60;margin-top:1px}
 .chip-l::before{content:'📍 '}
 
+/* ── 날짜없는 주간업무 배너 ── */
+#task-banner{
+  background:var(--surface);border-radius:10px;
+  border:1.5px solid var(--border);
+  box-shadow:0 1px 4px rgba(13,59,122,.07);
+  overflow:hidden;
+}
+.tb-header{
+  padding:11px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;
+}
+.tb-header h3{font-size:13px;font-weight:700;flex:1}
+.tb-header .tb-cnt{font-size:10px;background:#e8a020;color:#fff;border-radius:10px;padding:2px 8px}
+.tb-header .tb-toggle{
+  font-size:11px;color:var(--text-muted);cursor:pointer;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:5px;padding:3px 10px;transition:background .12s;
+}
+.tb-header .tb-toggle:hover{background:var(--border)}
+#task-list{
+  display:flex;flex-wrap:wrap;gap:8px;
+  padding:12px 16px;
+}
+#task-list.collapsed{display:none}
+.task-group{
+  display:flex;flex-direction:column;gap:4px;
+  min-width:180px;flex:1;max-width:280px;
+}
+.tg-dept{
+  font-size:10px;font-weight:700;color:var(--primary);
+  letter-spacing:.3px;padding:0 2px;margin-bottom:1px;
+}
+.task-chip{
+  border-radius:5px;padding:5px 9px;
+  font-size:11.5px;line-height:1.4;
+  border-left:3px solid;
+  display:flex;align-items:flex-start;gap:6px;
+}
+.task-chip.n{background:#eef2fb;border-left-color:var(--primary);color:#1a2c4a}
+.task-chip.i{background:var(--accent-lt);border-left-color:var(--accent);color:#5a3800}
+.task-chip.u{background:var(--danger-lt);border-left-color:var(--danger);color:#7a1a10}
+.task-chip-txt{flex:1}
+.task-chip-note{font-size:10px;opacity:.65;margin-top:2px}
+.tb-empty{padding:14px 16px;font-size:12px;color:var(--text-muted)}
+
 /* ── BOTTOM ROW ── */
 #bot{display:grid;grid-template-columns:1fr 300px;gap:14px}
 .scard{background:var(--surface);border-radius:10px;border:1.5px solid var(--border);box-shadow:0 1px 4px rgba(13,59,122,.07);overflow:hidden}
@@ -243,7 +288,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic','맑은 고
 
 <div id="pg">
   <div id="wbar">
-    <div class="wb-bdg"><div class="wn" id="wbw">--</div><div class="wl">WEEK</div></div>
+    <div class="wb-bdg"><div class="wn" id="wbw">--</div></div>
     <div class="wb-inf">
       <div class="wd" id="wbd">--</div>
       <div class="wy" id="wby">2026학년도</div>
@@ -256,6 +301,17 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic','맑은 고
   </div>
 
   <div id="gwrap"><div class="spin-w"><div class="spin"></div><p>불러오는 중...</p></div></div>
+
+  <!-- 날짜없는 주간 처리 업무 배너 -->
+  <div id="task-banner" style="display:none">
+    <div class="tb-header">
+      <span>📋</span>
+      <h3>이번 주 처리 업무 <span style="font-weight:400;color:var(--text-muted);font-size:11px">(날짜 미정)</span></h3>
+      <span class="tb-cnt" id="task-cnt">0</span>
+      <button class="tb-toggle" id="task-toggle" onclick="toggleTasks()">접기 ▲</button>
+    </div>
+    <div id="task-list"></div>
+  </div>
 
   <div id="bot">
     <div class="scard">
@@ -272,7 +328,7 @@ body{font-family:-apple-system,'Apple SD Gothic Neo','Malgun Gothic','맑은 고
 <script>
 /* ===== CONFIG ===== */
 const CFG={
-  API:'https://script.google.com/macros/s/AKfycbw6PI3xMbuBy70EgC9P9KXo7YDYdQhOs8W8HFsXvTPo6u1kbfkL43UO6cwVH20tf0g3sw/exec',
+  API:'https://script.google.com/macros/s/AKfycbybJVwLsEVBX2OMtVs9rWUOGvGmpmF2SXixz82gF5zAD9gTEAb8ot3Ugx_91kuFAn7XWw/exec',
   YEAR:2026,
   MOCK:false
 };
@@ -381,9 +437,17 @@ function mock({action,week,year}){
         {day:'금',startTime:'16:20',endTime:'16:40',category:'전체',content:'안전점검',location:'전 구역',target:'전교직원',department:'생활안전부',manager:'안전담당',note:'',importance:'normal'},
       ],
     };
+    const undated=[
+      {category:'기타',content:'학교 교육계획서 작성',department:'교무기획부',note:'',target:'',importance:'normal'},
+      {category:'기타',content:'특수교육대상자 순회교육 신청',department:'교육연구부',note:'3.5.까지',target:'',importance:'important'},
+      {category:'기타',content:'소통메신저 조직도 정비 및 최신화',department:'교육정보부',note:'',target:'',importance:'normal'},
+      {category:'기타',content:'나이스 업무 권한 부여',department:'교육정보부',note:'',target:'',importance:'normal'},
+      {category:'기타',content:'3학년 심화탐구프로젝트 모집',department:'과학중점교육부',note:'',target:'3학년',importance:'normal'},
+      {category:'기타',content:'3학년 사회융합 프로젝트 모집',department:'인문사회교육부',note:'',target:'3학년',importance:'normal'},
+    ];
     const tot=Object.values(sc).flat().length;
     const dates=weekDates(y,w);
-    return{year:y,week:w,dateRange:{label:`${fmt(dates[0])}~${fmt(dates[4])}`},schedules:sc,totalCount:tot,
+    return{year:y,week:w,dateRange:{label:`${fmt(dates[0])}~${fmt(dates[4])}`},schedules:sc,totalCount:tot,undated,
       weekend:{'토':[{day:'토',startTime:'08:40',endTime:'',category:'평가',content:'주말모의고사\n(1,2학년부)',location:'',target:'1·2학년',department:'연구부',manager:'',note:'',importance:'important'}],'일':[]}};
   }
   if(action==='getNotices')return{notices:[
@@ -468,6 +532,44 @@ function chip(it){
   return`<div class="chip ${cls}">${tm?`<div class="chip-t">${tm}</div>`:''}<div class="chip-c">${ttl}</div>${loc}</div>`;
 }
 
+/* ===== RENDER TASKS BANNER ===== */
+function renderTasks(items){
+  const banner=document.getElementById('task-banner');
+  const list=document.getElementById('task-list');
+  const cnt=document.getElementById('task-cnt');
+
+  if(!items||!items.length){banner.style.display='none';return;}
+
+  banner.style.display='block';
+  cnt.textContent=items.length;
+
+  // 부서별 그룹핑
+  const groups={};
+  items.forEach(it=>{
+    const d=it.department||'기타';
+    if(!groups[d])groups[d]=[];
+    groups[d].push(it);
+  });
+
+  list.innerHTML=Object.entries(groups).map(([dept,its])=>`
+    <div class="task-group">
+      <div class="tg-dept">📌 ${dept}</div>
+      ${its.map(it=>{
+        const cls=it.importance==='urgent'?'u':it.importance==='important'?'i':'n';
+        const note=it.note?`<div class="task-chip-note">⏰ ${it.note}</div>`:'';
+        const target=it.target?`<div class="task-chip-note">👥 ${it.target}</div>`:'';
+        return`<div class="task-chip ${cls}"><div class="task-chip-txt">${it.content}${note}${target}</div></div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function toggleTasks(){
+  const list=document.getElementById('task-list');
+  const btn=document.getElementById('task-toggle');
+  const collapsed=list.classList.toggle('collapsed');
+  btn.textContent=collapsed?'펼치기 ▼':'접기 ▲';
+}
+
 /* ===== RENDER TITLE BAR ===== */
 function renderBar(data){
   const t=new Date();const tw=weekNum(t);
@@ -537,7 +639,7 @@ async function loadWeek(w){
   document.getElementById('gwrap').innerHTML=`<div class="spin-w"><div class="spin"></div><p>불러오는 중...</p></div>`;
   try{
     const data=await api({action:'getWeek',week:w,year:S.year});
-    renderBar(data);renderGrid(data);
+    renderBar(data);renderGrid(data);renderTasks(data.undated||[]);
   }catch(e){
     document.getElementById('gwrap').innerHTML=`<div style="padding:22px;color:var(--danger);font-size:13px">⚠️ 데이터 로드 실패<br><small>${e.message}</small></div>`;
   }
